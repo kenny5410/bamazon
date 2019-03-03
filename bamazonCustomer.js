@@ -15,37 +15,53 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
     if (err) throw err;
-    console.log("connected as ID " + connection.threadId);
+    start();
 });
 
-function runSearch() {
-    connection.query("SELECT * FROM products", function(err, res) {
-        if (err) throw err;
-            console.table(res);
-    });
-}
 
-function askQuestions() {
-    inquirer
-        .prompt([
-            {
-                name: "buy",
-                type: "input",
-                message: "Enter the ID for the product you would like to buy: ",
-                validate: function(value) {
-                    if (isNaN(value) === false) {
-                        return true;
+function start() {
+    connection.query("SELECT * FROM products", function(err, results) {
+        if (err) throw err;
+        console.table(results);
+        inquirer
+            .prompt([
+                {
+                    name: "selection",
+                    type: "input",
+                    message: "Enter the ID for the product you would like to buy: ",
+                    validate: function(value) {
+                        if (isNaN(value) === false) {
+                            return true;
+                        }
+                        return false;
                     }
-                    return false;
+                },
+                {
+                    name: "quantity",
+                    type: "input",
+                    message: "How many would you like to buy?",
+                    validate: function(value) {
+                        if (isNaN(value) === false) {
+                            return true;
+                        }
+                        return false;
+                    }
                 }
-            }
-        ])
-        .then(function(answer) {
-            var query = "SELECT * FROM products";
-            connection.query(query, function(err, res) {
-                console.table("hello");
+            ])
+            .then(function(answer) {
+                if (results[answer.selection - 1].stock_quantity > parseInt(answer.quantity)) {
+                    var query = "UPDATE products SET stock_quantity = stock_quantity - (?) WHERE ID = ?;"
+                    connection.query(query,[answer.quantity, answer.selection], function(err) {
+                        console.log("Thank you! Your order has been placed!\n" +
+                        "Your total price is: $" + answer.quantity * results[answer.selection - 1].price);
+                        connection.end();
+                    }
+                    )
+                }
+                else {
+                    console.log("Sorry, we do not have that selected quantity in stock.");
+                    connection.end();
+                }
             });
-        });
+    });    
 }
-runSearch();
-//askQuestions();
