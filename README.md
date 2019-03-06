@@ -43,4 +43,3 @@ The following Node packages are used to make this application work.
 
 - Inquire
 - mySQL
-- console.table

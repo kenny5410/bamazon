@@ -1,7 +1,6 @@
 //Node Package Managers used in this application
 var mysql = require("mysql");
 var inquirer = require("inquirer");
-var cTable = require("console.table");
 
 //Creation of the mySQL database
 var connection = mysql.createConnection({
